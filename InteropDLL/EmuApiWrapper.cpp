@@ -19,7 +19,11 @@
 #include "Utilities/StringUtilities.h"
 #include "InteropNotificationListeners.h"
 
-#ifdef _WIN32
+#ifdef __POSIX_IPC_RENDERER__
+	#include "PosixIpc/PosixIpcRenderer.h"
+	#include "Linux/SdlSoundManager.h"
+	#include "Linux/LinuxKeyManager.h"
+#elif _WIN32
 	#include "Windows/Renderer.h"
 	#include "Windows/SoundManager.h"
 	#include "Windows/WindowsKeyManager.h"
@@ -78,14 +82,16 @@ extern "C" {
 			_viewerHandle = viewerHandle;
 
 			if(!noVideo) {
-				#ifdef _WIN32
+				#ifdef __POSIX_IPC_RENDERER__
+					_renderer.reset(new PosixIpcRenderer(_emu.get(), _viewerHandle));
+				#elif _WIN32
 					_renderer.reset(new Renderer(_emu.get(), (HWND)_viewerHandle));
 				#elif __APPLE__
 					_renderer.reset(new SoftwareRenderer(_emu.get()));
 				#else
 					_renderer.reset(new SdlRenderer(_emu.get(), _viewerHandle));
 				#endif
-			} 
+			}
 
 			if(!noAudio) {
 				#ifdef _WIN32
@@ -98,10 +104,10 @@ extern "C" {
 			if(!noInput) {
 				#ifdef _WIN32
 					_keyManager.reset(new WindowsKeyManager(_emu.get(), (HWND)_windowHandle));
-				#else 
+				#else
 					_keyManager.reset(new LinuxKeyManager(_emu.get()));
 				#endif
-					
+
 				KeyManager::RegisterKeyManager(_keyManager.get());
 			}
 		}
@@ -154,7 +160,7 @@ extern "C" {
 
 	DllExport void __stdcall ProcessAudioPlayerAction(AudioPlayerActionParams p) { _emu->ProcessAudioPlayerAction(p); }
 
-	DllExport void __stdcall GetArchiveRomList(char* filename, char* outBuffer, uint32_t maxLength) { 
+	DllExport void __stdcall GetArchiveRomList(char* filename, char* outBuffer, uint32_t maxLength) {
 		std::ostringstream out;
 		unique_ptr<ArchiveReader> reader = ArchiveReader::GetReader(filename);
 		if(reader) {
@@ -225,7 +231,7 @@ extern "C" {
 	}
 
 	DllExport void __stdcall DisplayMessage(char* title, char* message, char* param1) { MessageManager::DisplayMessage(title, message, param1 ? param1 : ""); }
-	
+
 	DllExport void __stdcall GetLog(char* outBuffer, uint32_t maxLength)
 	{
 		StringUtilities::CopyToBuffer(MessageManager::GetLog(), outBuffer, maxLength);
@@ -250,7 +256,7 @@ extern "C" {
 		}
 		return { 256, 240 };
 	}
-	
+
 	DllExport uint32_t __stdcall GetGameMemorySize(MemoryType type) { return _emu->GetMemory(type).Size; }
 
 	DllExport void __stdcall ClearCheats() { _emu->GetCheatManager()->ClearCheats(); }
@@ -330,7 +336,7 @@ extern "C" {
 				//turn on debugger to profile the debugger's code too
 				_emu->GetDebugger(true);
 			}
-				
+
 			std::this_thread::sleep_for(std::chrono::duration<int, std::milli>(5000));
 			std::cout << "Ran for " << _emu->GetFrameCount() << " frames" << std::endl;
 

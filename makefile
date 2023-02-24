@@ -21,6 +21,9 @@ endif
 SDL2LIB := $(shell sdl2-config --libs)
 SDL2INC := $(shell sdl2-config --cflags)
 
+ZMQLIB := -lzmq
+ZMQINC := -I /usr/include
+
 LINKCHECKUNRESOLVED := -Wl,-z,defs
 
 LINKOPTIONS :=
@@ -53,7 +56,8 @@ ifneq ($(filter arm%,$(MACHINE)),)
 	MESENPLATFORM := $(MESENOS)-arm64
 endif
 
-MESENFLAGS += -m64
+MESENFLAGS += -m64 -D__POSIX_IPC_RENDERER__
+#MESENFLAGS += -m64
 
 ifeq ($(DEBUG),)
 	MESENFLAGS += -O3
@@ -90,10 +94,10 @@ ifeq ($(PGO),optimize)
 endif
 
 ifneq ($(STATICLINK),false)
-	LINKOPTIONS += -static-libgcc -static-libstdc++ 
+	LINKOPTIONS += -static-libgcc -static-libstdc++
 endif
 
-CXXFLAGS = -fPIC -Wall --std=c++17 $(MESENFLAGS) $(SDL2INC) -I $(realpath ./) -I $(realpath ./Core) -I $(realpath ./Utilities) -I $(realpath ./Linux)
+CXXFLAGS = -fPIC -Wall --std=c++17 $(MESENFLAGS) $(SDL2INC) $(ZMQINC) -I $(realpath ./) -I $(realpath ./Core) -I $(realpath ./Utilities) -I $(realpath ./Linux)
 CFLAGS = -fPIC -Wall $(MESENFLAGS)
 
 OBJFOLDER := obj.$(MESENPLATFORM)
@@ -107,6 +111,9 @@ UTILOBJ := $(addsuffix .o,$(basename $(UTILSRC)))
 
 LINUXSRC := $(shell find Linux -name '*.cpp')
 LINUXOBJ := $(LINUXSRC:.cpp=.o)
+
+POSIXIPCSRC := $(shell find PosixIpc -name '*.cpp')
+POSIXIPCOBJ := $(POSIXIPCSRC:.cpp=.o)
 
 SEVENZIPSRC := $(shell find SevenZip -name '*.c')
 SEVENZIPOBJ := $(SEVENZIPSRC:.c=.o)
@@ -156,10 +163,10 @@ pgohelper: InteropDLL/$(OBJFOLDER)/$(SHAREDLIB)
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-InteropDLL/$(OBJFOLDER)/$(SHAREDLIB): $(SEVENZIPOBJ) $(LUAOBJ) $(UTILOBJ) $(COREOBJ) $(LIBEVDEVOBJ) $(LINUXOBJ) $(DLLOBJ)
+InteropDLL/$(OBJFOLDER)/$(SHAREDLIB): $(SEVENZIPOBJ) $(LUAOBJ) $(UTILOBJ) $(COREOBJ) $(LIBEVDEVOBJ) $(POSIXIPCOBJ) $(LINUXOBJ) $(DLLOBJ)
 	mkdir -p bin
 	mkdir -p InteropDLL/$(OBJFOLDER)
-	$(CXX) $(CXXFLAGS) $(LINKOPTIONS) $(LINKCHECKUNRESOLVED) -shared -o $(SHAREDLIB) $(DLLOBJ) $(SEVENZIPOBJ) $(LUAOBJ) $(LINUXOBJ) $(LIBEVDEVOBJ) $(UTILOBJ) $(COREOBJ) $(SDL2INC) -pthread $(FSLIB) $(SDL2LIB) $(LIBEVDEVLIB)
+	$(CXX) $(CXXFLAGS) $(LINKOPTIONS) $(LINKCHECKUNRESOLVED) -shared -o $(SHAREDLIB) $(DLLOBJ) $(SEVENZIPOBJ) $(LUAOBJ) $(POSIXIPCOBJ) $(LINUXOBJ) $(LIBEVDEVOBJ) $(UTILOBJ) $(COREOBJ) $(SDL2INC) -pthread $(FSLIB) $(SDL2LIB) $(ZMQLIB) $(LIBEVDEVLIB)
 	cp $(SHAREDLIB) bin/pgohelperlib.so
 	mv $(SHAREDLIB) InteropDLL/$(OBJFOLDER)
 
@@ -172,6 +179,7 @@ run:
 clean:
 	rm -r -f $(COREOBJ)
 	rm -r -f $(UTILOBJ)
+	rm -r -f $(POSIXIPCOBJ)
 	rm -r -f $(LINUXOBJ) $(LIBEVDEVOBJ)
 	rm -r -f $(SEVENZIPOBJ)
 	rm -r -f $(LUAOBJ)

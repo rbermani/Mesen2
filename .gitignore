@@ -190,3 +190,6 @@ packages/*
 
 TestHelper/*
 UI/Dependencies.zip
+
+# ML Client
+ml_client/target/

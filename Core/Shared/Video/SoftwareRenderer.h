@@ -1,3 +1,4 @@
+#pragma once
 #include "pch.h"
 #include "Shared/Interfaces/IRenderingDevice.h"
 #include "Utilities/SimpleLock.h"
@@ -22,7 +23,7 @@ private:
 	void SetScreenSize(uint32_t width, uint32_t height);
 
 public:
-	SoftwareRenderer(Emulator* emu);
+	SoftwareRenderer(Emulator* emu, void* windowHandle = nullptr);
 	~SoftwareRenderer();
 
 	void UpdateFrame(RenderedFrame& frame) override;

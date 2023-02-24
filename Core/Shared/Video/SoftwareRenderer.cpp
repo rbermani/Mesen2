@@ -5,7 +5,7 @@
 #include "Shared/Emulator.h"
 #include "Shared/NotificationManager.h"
 
-SoftwareRenderer::SoftwareRenderer(Emulator* emu)
+SoftwareRenderer::SoftwareRenderer(Emulator* emu, void* windowHandle)
 {
 	_emu = emu;
 	SetScreenSize(256, 240);

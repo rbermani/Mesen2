@@ -11,7 +11,11 @@
 #include "Shared/Video/SoftwareRenderer.h"
 #include "InteropNotificationListeners.h"
 
-#ifdef _WIN32
+#ifdef __ZMQ_IPC_RENDERER__
+	#include "ZMqIpc/ZMqIpcRenderer.h"
+	#include "Linux/SdlSoundManager.h"
+	#include "Linux/LinuxKeyManager.h"
+#elif _WIN32
 	#include "Windows/Renderer.h"
 	#include "Windows/SoundManager.h"
 	#include "Windows/WindowsKeyManager.h"
@@ -61,7 +65,10 @@ extern "C"
 
 		_historyPlayer->GetSettings()->GetEmulationConfig().EmulationSpeed = 100;
 
-#ifdef _WIN32
+#ifdef __ZMQ_IPC_RENDERER__
+		_historyRenderer.reset(new ZMqIpcRenderer(_emu.get(), viewerHandle));
+		_historySoundManager.reset(new SdlSoundManager(_historyPlayer.get()));
+#elif _WIN32
 		_historyRenderer.reset(new Renderer(_historyPlayer.get(), (HWND)viewerHandle));
 		_historySoundManager.reset(new SoundManager(_historyPlayer.get(), (HWND)windowHandle));
 #elif __APPLE__

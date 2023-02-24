@@ -1,0 +1,22 @@
+[package]
+name = "ml_client"
+authors = ["bobbermani@gmail.com"]
+version = "0.1.0"
+description = "A computer vision machine learning pet project"
+license = "MIT"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+ctrlc = { version = "3.2.5", features = ["termination"] }
+env_logger = "0.10.0"
+getrandom = "0.2.8"
+itertools = "0.10.5"
+log = "0.4.17"
+log-once = "0.4.0"
+pixels = "0.11.0"
+winit = "0.28.1"
+winit_input_helper = "0.14.0"
+zmq = "0.10.0"
+

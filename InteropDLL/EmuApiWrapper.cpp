@@ -22,7 +22,7 @@
 #ifdef __ZMQ_IPC_RENDERER__
 	#include "ZMqIpc/ZMqIpcRenderer.h"
 	#include "Linux/SdlSoundManager.h"
-	#include "Linux/LinuxKeyManager.h"
+	#include "ZMqIpc/ZMqIpcKeyManager.h"
 #elif _WIN32
 	#include "Windows/Renderer.h"
 	#include "Windows/SoundManager.h"
@@ -102,7 +102,9 @@ extern "C" {
 			}
 
 			if(!noInput) {
-				#ifdef _WIN32
+				#ifdef __ZMQ_IPC_RENDERER__
+					_keyManager.reset(new ZMqIpcKeyManager(_emu.get()));
+				#elif _WIN32
 					_keyManager.reset(new WindowsKeyManager(_emu.get(), (HWND)_windowHandle));
 				#else
 					_keyManager.reset(new LinuxKeyManager(_emu.get()));

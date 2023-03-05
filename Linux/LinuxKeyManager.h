@@ -35,16 +35,16 @@ public:
 	LinuxKeyManager(Emulator* emu);
 	virtual ~LinuxKeyManager();
 
-	void RefreshState();
-	bool IsKeyPressed(uint16_t key);
-	bool IsMouseButtonPressed(MouseButton button);
-	std::vector<uint16_t> GetPressedKeys();
-	string GetKeyName(uint16_t key);
-	uint16_t GetKeyCode(string keyName);
+	virtual void RefreshState();
+	virtual bool IsKeyPressed(uint16_t key);
+	virtual bool IsMouseButtonPressed(MouseButton button);
+	virtual std::vector<uint16_t> GetPressedKeys();
+	virtual string GetKeyName(uint16_t key);
+	virtual uint16_t GetKeyCode(string keyName);
 
-	void UpdateDevices();
-	bool SetKeyState(uint16_t scanCode, bool state);
-	void ResetKeyState();
+	virtual void UpdateDevices();
+	virtual bool SetKeyState(uint16_t scanCode, bool state);
+	virtual void ResetKeyState();
 
-	void SetDisabled(bool disabled);
+	virtual void SetDisabled(bool disabled);
 };

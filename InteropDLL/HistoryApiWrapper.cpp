@@ -14,7 +14,7 @@
 #ifdef __ZMQ_IPC_RENDERER__
 	#include "ZMqIpc/ZMqIpcRenderer.h"
 	#include "Linux/SdlSoundManager.h"
-	#include "Linux/LinuxKeyManager.h"
+	#include "ZMqIpc/ZMqIpcKeyManager.h"
 #elif _WIN32
 	#include "Windows/Renderer.h"
 	#include "Windows/SoundManager.h"
@@ -67,17 +67,20 @@ extern "C"
 
 #ifdef __ZMQ_IPC_RENDERER__
 		_historyRenderer.reset(new ZMqIpcRenderer(_emu.get(), viewerHandle));
-		_historySoundManager.reset(new SdlSoundManager(_historyPlayer.get()));
 #elif _WIN32
 		_historyRenderer.reset(new Renderer(_historyPlayer.get(), (HWND)viewerHandle));
-		_historySoundManager.reset(new SoundManager(_historyPlayer.get(), (HWND)windowHandle));
 #elif __APPLE__
 		_historyRenderer.reset(new SoftwareRenderer(_historyPlayer.get()));
-		_historySoundManager.reset(new SdlSoundManager(_historyPlayer.get()));
 #else
 		_historyRenderer.reset(new SdlRenderer(_historyPlayer.get(), viewerHandle));
+#endif
+
+#ifdef _WIN32
+		_historySoundManager.reset(new SoundManager(_historyPlayer.get(), (HWND)windowHandle));
+#else
 		_historySoundManager.reset(new SdlSoundManager(_historyPlayer.get()));
 #endif
+
 	}
 
 	DllExport HistoryViewerState __stdcall HistoryViewerGetState()
